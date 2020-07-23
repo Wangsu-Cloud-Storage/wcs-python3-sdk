@@ -390,7 +390,7 @@ cli.ops_execute(fops,bucket,key)
 示例：cli.wslive_list(channelname,startTime,startTime, bucket,start,limit)
 ```
 
-#### 计算文件crc64的三种方式#####
+#### 计算文件crc64的三种方式
 ## 方式1：
 wcscmd[计算文件的crc64值]
 ```wcscmd crc64 ./test-1k```
