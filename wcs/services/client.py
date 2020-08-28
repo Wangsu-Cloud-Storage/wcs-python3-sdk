@@ -1,5 +1,7 @@
 #!/usr/bin/python
 ## -*- coding: utf-8 -*-
+import os
+
 from wcs.commons.util import urlsafe_base64_encode
 from wcs.commons.auth import Auth
 from wcs.services.simpleupload import SimpleUpload
@@ -10,7 +12,7 @@ from wcs.services.fmgr import Fmgr
 from wcs.services.persistentfop import PersistentFop
 from wcs.services.wslive import WsLive
 from wcs.commons.putpolicy import PutPolicy
-
+from wcs.commons.error_deal import WcsSeriveError
 class Client(object):
     """接口封装类
     该类封装了SDK提供的全部API，用户在开发时只需要实例化这个类就可以调用SDK提供的全部接口，而不需要根据不同的API实例化不同的类
@@ -57,7 +59,23 @@ class Client(object):
         token = self.auth.uploadtoken(policy.putpolicy)
         upload_id = tmp_upload_id or self.cfg.upload_id
         return self.multiupload.upload(path,token,upload_id)
-        
+
+    def smart_upload(self,path,bucket, key,tmp_upload_id=None,multi_size=20):
+        policy = PutPolicy()
+        policy.set_conf('scope', '%s:%s' % (bucket,key))
+        policy.dump_policy(self.cfg)
+        token = self.auth.uploadtoken(policy.putpolicy)
+        file_size = 1024*1024*int(multi_size)
+        upload_id = tmp_upload_id or self.cfg.upload_id
+        if os.path.getsize(path) <= file_size and not upload_id:
+            upload_result = self.simpleupload.upload(path ,token ,key)
+            if 200 <= upload_result[0] <400:
+                return upload_result
+            else:
+                raise WcsSeriveError('Upload file fail,erorr info:{0}'.format(upload_result))
+        else:
+            return self.multiupload.smart_upload(path,token,upload_id)
+
     def bucket_list(self,bucket,prefix=None, marker=None, limit=None, mode=None, starttime=None,endtime=None):
         try:
             pre = prefix or str(self.cfg.prefix)

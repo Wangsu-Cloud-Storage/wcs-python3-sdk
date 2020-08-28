@@ -11,7 +11,7 @@ from wcs.commons.http import _post
 from wcs.commons.logme import debug,warning,error
 from wcs.commons.util import readfile,GetUuid
 from wcs.commons.util import urlsafe_base64_encode,https_check
-
+from wcs.commons.error_deal import  WcsSeriveError
 from wcs.services.uploadprogressrecorder import UploadProgressRecorder
 
 #config_file = os.path.join(expanduser("~"), ".wcscfg")
@@ -160,6 +160,7 @@ class MultipartUpload(object):
             bput = readfile(f, offset, self.bput_size)
             blkcode, blktext,_ = _post(url=url,headers=headers, data=bput)
             while mkblk_retries and self.__need_retry(blkcode):
+                debug('make block fail.retry upload')
                 blkcode, blktext,_ = _post(url=url, headers=headers, data=bput)
                 mkblk_retries -= 1
             if blkcode != 200:
@@ -184,6 +185,7 @@ class MultipartUpload(object):
         while bput_next and bputnum < self.block_size/self.bput_size:
             bputcode, bputtext, _ = self._make_bput_post(ctx, bputnum, bput_next)
             while bput_retries and self.__need_retry(bputcode):
+                debug('bput fail.retry upload')
                 bputcode, bputtext, _ = self._make_bput_post(ctx, bputnum, bput_next)
                 bput_retries -= 1
             if bputcode != 200:
@@ -235,6 +237,7 @@ class MultipartUpload(object):
         headers = self.__generate_headers()
         code,text,logid = _post(url=url,headers=headers,data=body)
         while mkfile_retries and self.__need_retry(code):
+            debug('make file fail.retry upload')
             code,text,logid = _post(url=url,headers=headers,data=body)
         self.recorder.delete_upload_record()
         return code,text,logid
@@ -250,7 +253,6 @@ class MultipartUpload(object):
             self.recorder = UploadProgressRecorder(upload_id)
             offsets = self._records_parse(upload_id)
             debug('Uncomplete offsetlist: %s, uploadid: %s, complete size: %d' % (offsets, upload_id, self.progress))
-
         else:
             debug("Now start a new multipart upload task")
             self._initial_records()
@@ -284,3 +286,48 @@ class MultipartUpload(object):
             debug('Sorry! Mulitpart upload fail,more detail see %s' % upload_record)
             return self.results
             #raise Exception("Multipart upload fail")
+
+    def smart_upload(self,path,token,upload_id=None):
+        self._define_config(path,token,upload_id)
+        if upload_id:
+            self.recorder = UploadProgressRecorder(upload_id)
+            offsets = self._records_parse(upload_id)
+            debug('Uncomplete offsetlist: %s, uploadid: %s, complete size: %d' % (offsets, upload_id, self.progress))
+
+        else:
+            debug("Now start a new multipart upload task")
+            self._initial_records()
+            offsets = [i * (self.block_size) for i in range(0,self.blocknum)]
+
+        if len(offsets) != 0:
+            debug('There are %d offsets need to upload' % (len(offsets)))
+            debug('Now start upload file blocks')
+            if self.concurrency > 0:
+                pool = ThreadPool(self.concurrency)
+                pool.map(self._make_block, offsets)
+                pool.close()
+                pool.join()
+
+            elif self.concurrency == 0:
+                for offset in offsets:
+                    return_code = self._make_block(offset)
+                    if 400 <= int(return_code) <= 499:
+                        debug('Single-Thread,attempt authentication failed,exit the task.')
+                        sys.exit()
+            else:
+                raise ValueError('Invalid concurrency')
+                sys.exit()
+
+        if self._is_complete():
+            debug('Now all blocks have upload suc.')
+            mkfile_result = self._make_file()
+            if 200 <= int(mkfile_result[0]) < 400:
+                return mkfile_result
+            else:
+                raise WcsSeriveError("Make file fail,please upload file again")
+        else:
+            fail_list = self._get_failoffsets()
+            upload_record = str(Config.tmp_record_folder) + self.uploadBatch
+            debug('Sorry! Mulitpart upload fail,more detail see %s' % upload_record)
+            # return self.results
+            raise WcsSeriveError("Multipart upload fail,please upload file again")

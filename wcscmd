@@ -16,7 +16,6 @@ from wcs.commons.util import file_crc64
 from wcs.__init__ import __version__
 from wcs.commons.error_deal import ParameterError
 
-
 def output(message):
     sys.stdout.write(message + '\n')
     sys.stdout.flush()
