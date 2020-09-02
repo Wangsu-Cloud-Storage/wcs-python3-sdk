@@ -7,12 +7,14 @@ from wcs.commons.auth import Auth
 from wcs.services.simpleupload import SimpleUpload
 from wcs.services.streamupload import StreamUpload
 from wcs.services.multipartupload import MultipartUpload
+from wcs.services.simple_multipartupload import Simple_MultipartUpload
 from wcs.services.filemanager import BucketManager
 from wcs.services.fmgr import Fmgr
 from wcs.services.persistentfop import PersistentFop
 from wcs.services.wslive import WsLive
 from wcs.commons.putpolicy import PutPolicy
 from wcs.commons.error_deal import WcsSeriveError
+
 class Client(object):
     """接口封装类
     该类封装了SDK提供的全部API，用户在开发时只需要实例化这个类就可以调用SDK提供的全部接口，而不需要根据不同的API实例化不同的类
@@ -29,59 +31,57 @@ class Client(object):
     """
     def __init__(self, config):
         self.auth = Auth(config.access_key, config.secret_key)
-        self.simpleupload = SimpleUpload(config.put_url)
-        self.streamupload = StreamUpload(config.put_url)
-        self.multiupload = MultipartUpload(config.put_url)
-        self.bmgr = BucketManager(self.auth,config.mgr_url)
-        self.fmgr = Fmgr(self.auth,config.mgr_url)
-        self.pfops = PersistentFop(self.auth,config.mgr_url)
-        self.wsl = WsLive(self.auth,config.mgr_url)
         self.cfg = config
 
     def simple_upload(self, path, bucket, key):
+        simpleupload = SimpleUpload(self.cfg.put_url)
         policy = PutPolicy()
         policy.set_conf('scope', '%s:%s' % (bucket,key))
         policy.dump_policy(self.cfg)
         token = self.auth.uploadtoken(policy.putpolicy)
-        return self.simpleupload.upload(path,token ,key)
+        return simpleupload.upload(path,token ,key)
 
     def stream_upload(self, stream, bucket, key):
+        streamupload = StreamUpload(self.cfg.put_url)
         policy = PutPolicy()
         policy.set_conf('scope', '%s:%s' % (bucket,key))
         policy.dump_policy(self.cfg)
         token = self.auth.uploadtoken(policy.putpolicy)
-        return self.streamupload.upload(stream,token ,key)
+        return streamupload.upload(stream,token ,key)
 
     def multipart_upload(self,path,bucket, key,tmp_upload_id=None):
+        multiupload = MultipartUpload(self.cfg.put_url)
         policy = PutPolicy()
         policy.set_conf('scope', '%s:%s' % (bucket,key))
         policy.dump_policy(self.cfg)
         token = self.auth.uploadtoken(policy.putpolicy)
         upload_id = tmp_upload_id or self.cfg.upload_id
-        return self.multiupload.upload(path,token,upload_id)
+        return multiupload.upload(path,token,upload_id)
 
-    def smart_upload(self,path,bucket, key,tmp_upload_id=None,multi_size=20):
+    def smart_upload(self,path,bucket, key,multi_size=20):
+        simple_multiupload = Simple_MultipartUpload(self.cfg.put_url)
+        simpleupload = SimpleUpload(self.cfg.put_url)
         policy = PutPolicy()
         policy.set_conf('scope', '%s:%s' % (bucket,key))
         policy.dump_policy(self.cfg)
         token = self.auth.uploadtoken(policy.putpolicy)
         file_size = 1024*1024*int(multi_size)
-        upload_id = tmp_upload_id or self.cfg.upload_id
-        if os.path.getsize(path) <= file_size and not upload_id:
-            upload_result = self.simpleupload.upload(path ,token ,key)
+        if os.path.getsize(path) <= file_size:
+            upload_result = simpleupload.upload(path ,token ,key)
             if 200 <= upload_result[0] <400:
                 return upload_result
             else:
                 raise WcsSeriveError('Upload file fail,erorr info:{0}'.format(upload_result))
         else:
-            return self.multiupload.smart_upload(path,token,upload_id)
+            return simple_multiupload.simple_multiupload(path,token)
 
     def bucket_list(self,bucket,prefix=None, marker=None, limit=None, mode=None, starttime=None,endtime=None):
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
         try:
             pre = prefix or str(self.cfg.prefix)
         except Exception:
             pre = ''
-        
+
         try:
             # m = mode or int(self.cfg.mode)
             if mode == None:
@@ -90,7 +90,7 @@ class Client(object):
                 m = int(mode)
         except Exception:
             m = ''
-        
+
         try:
             mar = marker or str(self.cfg.marker)
         except Exception:
@@ -99,89 +99,109 @@ class Client(object):
             l = limit or int(self.cfg.limit)
         except Exception:
             l = ''
-        return self.bmgr.bucketlist(bucket,pre,mar,l,m, starttime, endtime)
+        return bmgr.bucketlist(bucket,pre,mar,l,m, starttime, endtime)
 
     def list_buckets(self):
-        return self.bmgr.bucket_list()
-   
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        return bmgr.bucket_list()
+
     def bucket_stat(self, name, startdate, enddate):
-        return self.bmgr.bucket_stat(name, startdate, enddate)
-   
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        return bmgr.bucket_stat(name, startdate, enddate)
+
     def bucket_statistics(self, name, stype, startdate, enddate, isListDetails='false'):
-        return self.bmgr.bucket_statistics(name, stype, startdate, enddate, isListDetails)
-    
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        return bmgr.bucket_statistics(name, stype, startdate, enddate, isListDetails)
+
     def image_detect(self, image, dtype, bucket):
-        return self.bmgr.image_detect(image, dtype, bucket)
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        return bmgr.image_detect(image, dtype, bucket)
 
     def stat(self,bucket,key):
-        return self.bmgr.stat(bucket,key)
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        return bmgr.stat(bucket,key)
 
     def delete(self,bucket,key):
-        return self.bmgr.delete(bucket,key)
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        return bmgr.delete(bucket,key)
 
     def move(self,srcbucket, srckey, dstbucket, dstkey=''):
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
         if dstkey:
             pass
         else:
             dstkey = srckey
-        return self.bmgr.move(srcbucket, srckey, dstbucket, dstkey)
+        return bmgr.move(srcbucket, srckey, dstbucket, dstkey)
 
     def copy(self,srcbucket, srckey, dstbucket, dstkey=''):
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
         if dstkey:
             pass
         else:
             dstkey = srckey
-        return self.bmgr.copy(srcbucket, srckey, dstbucket, dstkey)
+        return bmgr.copy(srcbucket, srckey, dstbucket, dstkey)
 
     def setdeadline(self,bucket,key,deadline):
-        return self.bmgr.setdeadline(bucket,key,deadline)
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        return bmgr.setdeadline(bucket,key,deadline)
 
     def _parse_fops(self, fops):
         data = [fops]
         if self.cfg.notifyurl:
             data.append('notifyURL=%s' % urlsafe_base64_encode(self.cfg.notifyurl))
-        if self.cfg.separate: 
+        if self.cfg.separate:
             data.append('separate=%s' % self.cfg.separate)
         if self.cfg.force:
             data.append('force=%s' % self.cfg.force)
         return 'fops=' + '&'.join(data)
 
     def fmgr_move(self, fops):
-        return self.fmgr.fmgr_move(self._parse_fops(fops))
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.fmgr_move(self._parse_fops(fops))
 
-    def fmgr_copy(self, fops): 
-        return self.fmgr.fmgr_copy(self._parse_fops(fops))
+    def fmgr_copy(self, fops):
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.fmgr_copy(self._parse_fops(fops))
 
     def fmgr_fetch(self, fops):
-        return self.fmgr.fmgr_fetch(self._parse_fops(fops))
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.fmgr_fetch(self._parse_fops(fops))
 
     def fmgr_delete(self, fops):
-        return self.fmgr.fmgr_delete(self._parse_fops(fops))
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.fmgr_delete(self._parse_fops(fops))
 
     def prefix_delete(self, fops):
-        return self.fmgr.prefix_delete(self._parse_fops(fops))
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.prefix_delete(self._parse_fops(fops))
 
     def m3u8_delete(self, fops):
-        return self.fmgr.m3u8_delete(self._parse_fops(fops))
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.m3u8_delete(self._parse_fops(fops))
 
     def fmgr_compress(self,fops):
-        return self.fmgr.fmgr_compress(self._parse_fops(fops))
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.fmgr_compress(self._parse_fops(fops))
 
     def fmgr_status(self,persistentId):
-        return self.fmgr.status(persistentId)
+        fmgr = Fmgr(self.auth,self.cfg.mgr_url)
+        return fmgr.status(persistentId)
 
     def ops_execute(self,fops,bucket,key):
+        pfops = PersistentFop(self.auth,self.cfg.mgr_url)
         f = int(self.cfg.force)
         if self.cfg.separate:
             separate = int(self.cfg.separate)
         else:
             separate = 0
         notifyurl = self.cfg.notifyurl or ''
-        return self.pfops.execute(fops,bucket,key,f,separate,notifyurl)
- 
+        return pfops.execute(fops,bucket,key,f,separate,notifyurl)
+
     def ops_status(self,persistentId):
-        return self.pfops.fops_status(persistentId)
+        pfops = PersistentFop(self.auth,self.cfg.mgr_url)
+        return pfops.fops_status(persistentId)
 
     def wslive_list(self,channelname, startTime, endTime, bucket, start=None, limit=None):
-        return self.wsl.wslive_list( channelname, startTime, endTime, bucket, start, limit)
+        wsl = WsLive(self.auth,config.mgr_url)
+        return wsl.wslive_list( channelname, startTime, endTime, bucket, start, limit)
 
