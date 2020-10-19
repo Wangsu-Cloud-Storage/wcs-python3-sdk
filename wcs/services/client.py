@@ -101,6 +101,45 @@ class Client(object):
             l = ''
         return bmgr.bucketlist(bucket,pre,mar,l,m, starttime, endtime)
 
+    def bucket_listAll(self,bucket,prefix=None, marker=None, limit=None, mode=None, starttime=None,endtime=None):
+        'List all files in the bucket.'
+        bmgr = BucketManager(self.auth,self.cfg.mgr_url)
+        _items = []
+        try:
+            pre = prefix or str(self.cfg.prefix)
+        except Exception:
+            pre = ''
+        try:
+            # m = mode or int(self.cfg.mode)
+            if mode == None:
+                m = int(self.cfg.mode)
+            else:
+                m = int(mode)
+        except Exception:
+            m = ''
+        try:
+            mar = marker or str(self.cfg.marker)
+        except Exception:
+            mar = ''
+        try:
+            l = limit or int(self.cfg.limit)
+        except Exception:
+            l = ''
+        code, response, reqid = bmgr.bucketlist(bucket,pre,mar,l,m, starttime, endtime)
+        if code == 200:
+            _items += response.get('items')
+            return_marker = response.get('marker')
+            while return_marker:
+                code, response, reqid = bmgr.bucketlist(bucket,pre,return_marker,l,m, starttime, endtime)
+                if code != 200:
+                    return code, response, reqid
+                _items += response.get('items')
+                return_marker = response.get('marker')
+            response['items'] = _items
+            return code,response,reqid
+        else:
+            return code, response, reqid
+
     def list_buckets(self):
         bmgr = BucketManager(self.auth,self.cfg.mgr_url)
         return bmgr.bucket_list()
@@ -204,4 +243,3 @@ class Client(object):
     def wslive_list(self,channelname, startTime, endTime, bucket, start=None, limit=None):
         wsl = WsLive(self.auth,config.mgr_url)
         return wsl.wslive_list( channelname, startTime, endTime, bucket, start, limit)
-

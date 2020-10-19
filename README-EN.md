@@ -145,10 +145,16 @@ wcscmd multiput wcs://BCUKET/OBJECT localPath --upload-id 3IL3ce3kR6kDf4sihxh0Lc
 wcscmd listbucket
 ```
 
-#### wcscmd List Object of a Bucket
+#### wcscmd List Object by page of a Bucket
 E.g. In the below example, the result of list will be saved in result of current directory.
 ```
-wcscmd list wcs://BCUKET ./result --limit 4  --marker 2
+wcscmd list wcs://BCUKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
+```
+
+#### wcscmd List All Objects of a Bucket to local file
+E.g. In the below example, the result of list will be saved in result of current directory.
+```
+wcscmd listall wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 ```
 
 #### wcscmd Download an Object
@@ -230,8 +236,8 @@ from wcs.commons.config import Config
 from wcs.services.client import Client
 
 config_file = os.path.join(expanduser("~"), ".wcscfg")
-cfg = Config(config_file) #加载配置文件
-cli = Client(cfg) 初始化Client
+cfg = Config(config_file) 
+cli = Client(cfg) init Client
 ```
 
 #### Normal Upload
@@ -254,6 +260,17 @@ upload_id = ''
 cli.multipart_upload(filepath, bucket, key，upload_id)
 ```
 Besides, current upload record is in tmp_record_folder directory, it will generate directories named with upload id. And it will generate multiple objects in directory tmp_record_folder/upload id. Each object will be named with its offset, and it will record the upload result.
+
+#### Smart Upload
+This interface will automatically select whether to upload the file by NormalUpload or MultipartUpload depend on multi_size
+```
+key = ''
+bucket = ''
+filepath = ''
+upload_id = ''
+cli.smart_upload(filepath, bucket, key, upload_id, multi_size)
+```
+另外，当前上传记录的格式是在tmp\_record\_folder目录下，生成已当前上传任务的upload id命名的目录，然后在目录tmp\_record\_folder/upload id下生成多个文件，每个文件以块offset命名，并记录了这个块的上传结果
 
 #### Upload by Stream Address
 The upload policy can be defined by editing .wcscfg, and the stream address must be provided.

@@ -117,13 +117,13 @@ Get fmgr task results
 
 #### wcscmd[普通上传](https://wcs.chinanetcenter.com/document/API/FileUpload/Upload)
 
-上传策略可以通过编辑.wcscfg文件中响应的配置项进行定义，也可以通过命令行的option进行临时配置,
+上传策略可以通过编辑.wcscfg文件中相应的配置项进行定义，也可以通过命令行的option进行临时配置,
 ```
 wcscmd put wcs://BUCKET/OBJECT localPath  --overwrite 1
 ```
 
 #### wcscmd[分片上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-上传策略可以通过编辑.wcscfg文件中响应的配置项进行定义，也可以通过命令行的option进行临时配置，如果需要进行断点续传需要增加--upload-id这个option，这个upload-id的优先级高于在.wcscfg中配置的upload id
+上传策略可以通过编辑.wcscfg文件中相应的配置项进行定义，也可以通过命令行的option进行临时配置，如果需要进行断点续传需要增加--upload-id这个option，这个upload-id的优先级高于在.wcscfg中配置的upload id
 ```
 wcscmd multiput wcs://BUCKET/OBJECT localPath --upload-id 3IL3ce3kR6kDf4sihxh0LcWUpzTYEKFf
 ```
@@ -134,8 +134,13 @@ wcscmd multiput wcs://BUCKET/OBJECT localPath --upload-id 3IL3ce3kR6kDf4sihxh0Lc
 #### wcscmd[列举空间文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
 空间test的列举结果会保存在当前目录的result文件中
 ```
-wcscmd list wcs://BUCKET ./result --limit 4  --marker 2
+wcscmd list wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 ```
+
+#### wcscmd[列举空间所有文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
+空间test的列举结果会保存在当前目录的result文件中
+```
+wcscmd listall wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 
 #### wcscmd下载文件
 未带filename 参数，下载的文件默认会与源文件同名，并保存在当前目录下
@@ -205,11 +210,11 @@ from wcs.services.client import Client
 
 config_file = os.path.join(expanduser("~"), ".wcscfg")
 cfg = Config(config_file) #加载配置文件
-cli = Client(cfg) 初始化Client  #注：如果要使用多线程同时上传不同文件，请每个线程独立创建client使用，否则不同文件的分片上传信息会重叠
+cli = Client(cfg) 初始化Client
 ```
 
 #### [普通上传](https://wcs.chinanetcenter.com/document/API/FileUpload/Upload)
-上传策略通过编辑.wcscfg文件中响应的配置项进行定义
+上传策略通过编辑.wcscfg文件中相应的配置项进行定义
 ```
 key = ''
 bucket = ''
@@ -218,7 +223,7 @@ cli.simple_upload(filepath, bucket, key)
 ```
 
 #### [分片上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-上传策略通过编辑.wcscfg文件中响应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
+上传策略通过编辑.wcscfg文件中相应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
 ```
 key = ''
 bucket = ''
@@ -230,13 +235,13 @@ cli.multipart_upload(filepath, bucket, key，upload_id)
 
 #### [高级上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
 1 该接口用于自动选择是原子上传还是分片上传，默认的multi_size 为20M （入参单位为M），小于等于20M 使用原子上传，大于20M使用分片上传
-2 上传策略通过编辑.wcscfg文件中响应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
+2 上传策略通过编辑.wcscfg文件中相应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
 ```
 key = ''
 bucket = ''
 filepath = ''
 upload_id = ''
-cli.smart_upload(filepath, bucket, key, upload_id,multi_size)
+cli.smart_upload(filepath, bucket, key，upload_id,multi_size)
 ```
 另外，当前上传记录的格式是在tmp\_record\_folder目录下，生成已当前上传任务的upload id命名的目录，然后在目录tmp\_record\_folder/upload id下生成多个文件，每个文件以块offset命名，并记录了这个块的上传结果
 

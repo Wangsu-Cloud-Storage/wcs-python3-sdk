@@ -33,6 +33,7 @@ def get_commands_list():
     # Return all commands list of wcscmd
     return [
         {"cmd": "list", "label": "List objects", "param": "wcs://BUCKET RESFILE", "func": cmd_list, "argc": 2},
+        {"cmd": "listall", "label": "List all files in the bucket.", "param": "wcs://BUCKET RESFILE", "func": cmd_listall, "argc": 2},
         {"cmd": "listbucket", "label": "List buckets", "param": "", "func": cmd_listbucket, "argc": 0},
         {"cmd": "get", "label": "Download file", "param": "URL", "func": cmd_get, "argc": 2},
         {"cmd": "del", "label": "Delete a file", "param": "wcs://BUCKET/OBJECT", "func": cmd_del, "argc": 1},
@@ -63,9 +64,10 @@ def cmd_list(args):
                 with open(resfile, 'w') as f:
                     #f.write(json.dumps(response))
                     f.write(str(response))
-            except IOError:
-                debug("Save Fail")
+            except IOError as e:
+                error("Save Fail,{0}".format(e))
                 sys.exit()
+
             debug("Request result saved to %s" % (resfile))
             debug("Request ID is: %s" % (reqid['x-reqid']))
         else:
@@ -74,6 +76,38 @@ def cmd_list(args):
     except Exception as E:
         error(E)
 
+def cmd_listall(args):
+    # Define implementation of List Objects API
+    cfg = Config()
+    cli = Client(cfg)
+    bucket = args[0].split("wcs://")[1]
+    resfile = os.path.join(os.getcwd(), args[1])
+    try:
+        code, response, reqid = cli.bucket_list(bucket, cfg.prefix, cfg.marker, int(cfg.limit), int(cfg.mode))
+        if code == 200:
+            try:
+                with open(resfile, 'a+') as f:
+                    return_marker = response.get('marker')
+                    f.write(str(response)+"\n")
+                    while return_marker:
+                        code, response, reqid = cli.bucket_list(bucket, cfg.prefix, return_marker, int(cfg.limit), int(cfg.mode))
+                        if code != 200:
+                            debug("error-message:%s" % response)
+                            error("Request fail, more detail please pay attention to reqid:{0},marker:{1}".format(reqid.get('x-reqid'),return_marker))
+                            return
+                        f.write(str(response)+"\n")
+                        return_marker = response.get('marker')
+            except IOError as e:
+                error("Save Fail,{0}".format(e))
+                sys.exit()
+
+            debug("Request result saved to %s" % (resfile))
+            debug("Request ID is: %s" % (reqid['x-reqid']))
+        else:
+            debug("error-message:%s" % response)
+            error("Request fail, more detail please pay attention to reqid: %s " % (reqid.get('x-reqid')))
+    except Exception as E:
+        error(E)
 
 def cmd_get(args):
     # Define implementation of download file from URL
@@ -377,8 +411,7 @@ def main():
     optparser.add_option("--marker", dest="marker", help="Start string for list")
     optparser.add_option("--relevance", dest="relevance", action="store_true",
                          help="Whether modify deadline relevant .ts when modify deadline of m3u8 file")
-    optparser.add_option("-d", "--debug", dest="verbosity", action="store_const", const=logging.DEBUG,
-                         help="Enable debug output.")
+    optparser.add_option("--debug", dest="debug",help="Enable debug output.")
     optparser.add_option("--output", dest="output", help="Save request result to specified key, like:<bucket>:<key>")
     optparser.add_option("--notify", dest="notifyURL", help="Notify url for request result")
     optparser.add_option("--separate", dest="separate", help="Whether separate notify, bool type")
@@ -521,5 +554,4 @@ if __name__ == '__main__':
     from wcs.commons.logme import debug, error
     from wcs.services.client import Client
     from wcs.commons.util import urlsafe_base64_encode
-
     main()
