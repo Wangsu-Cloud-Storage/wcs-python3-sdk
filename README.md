@@ -129,7 +129,9 @@ wcscmd multiput wcs://BUCKET/OBJECT localPath --upload-id 3IL3ce3kR6kDf4sihxh0Lc
 ```
 
 #### wcscmd[列举空间列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/listbucket)
-```wcscmd listbucket```
+```
+wcscmd listbucket
+```
 
 #### wcscmd[列举空间文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
 空间test的列举结果会保存在当前目录的result文件中
@@ -141,6 +143,7 @@ wcscmd list wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 空间test的列举结果会保存在当前目录的result文件中
 ```
 wcscmd listall wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
+```
 
 #### wcscmd下载文件
 未带filename 参数，下载的文件默认会与源文件同名，并保存在当前目录下
@@ -151,7 +154,9 @@ wcscmd get [URL] [filename]
 ```
 
 #### wcscmd[获取文件信息](https://wcs.chinanetcenter.com/document/API/ResourceManage/stat)
-```wcscmd stat wcs://BUCKET/OBJECT```
+```
+wcscmd stat wcs://BUCKET/OBJECT
+```
 
 #### wcscmd[设置文件保存期限](https://wcs.chinanetcenter.com/document/API/ResourceManage/setdeadline)
 保存时间单位为天，0表示尽快删除，-1表示取消过期时间，永久保存,要设置-1的时候，需要将整个包含在引号内
@@ -161,7 +166,9 @@ wcscmd setdeadline wcs://BUCKET/OBJECT '"-1"'
 ```
 
 #### wcscmd[删除文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/delete)
-```wcscmd del wcs://BUCKET/OBJECT```
+```
+wcscmd del wcs://BUCKET/OBJECT
+```
 
 #### wcscmd[按前缀删除文件](https://wcs.chinanetcenter.com/document/API/Fmgr/deletePrefix)
 ```
@@ -169,10 +176,14 @@ wcscmd deletePrefix wcs://BUCKET test-prefix
 ```
 
 #### wcscmd[移动文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/move)
-```wcscmd mv wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT```
+```
+wcscmd mv wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
+```
 
 #### wcscmd[复制文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/copy)
-```wcscmd cp wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT```
+```
+wcscmd cp wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
+```
 
 
 ## 计算文件etag值
