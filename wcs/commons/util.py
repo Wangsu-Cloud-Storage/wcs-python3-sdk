@@ -2,7 +2,7 @@
 from hashlib import sha1
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 import base64
-import os,re
+import os,re,time
 import logging
 import crcmod
 
@@ -12,6 +12,7 @@ import random
 import string
 from wcs.commons.config import Config
 from wcs.commons.error_deal import ParameterError
+from wcs.commons.logme import debug
 try:
     import zlib
     binascii = zlib
@@ -180,6 +181,15 @@ def etag(filePath):
         输入文件的etag值
     """
     with open(filePath, 'rb') as f:
+        # 查看文件的修改时间
+        file_stat = os.stat(filePath)
+        debug('文件绝对路径:{0}'.format(os.path.abspath(filePath)))
+        # 查看文件的上次访问时间
+        debug('文件创建时间:{0}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_stat.st_ctime))))
+        #最后一次修改的时间
+        debug('最后一次修改的时间:{0}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_stat.st_mtime))))
+        # 查看文件的上次访问时间
+        debug('上次访问的时间:{0}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_stat.st_atime))))
         return etag_stream(f)
 
 
