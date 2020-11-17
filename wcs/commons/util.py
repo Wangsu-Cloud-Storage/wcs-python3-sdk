@@ -153,14 +153,14 @@ def _sha1(data):
     return h.digest()
 
 
-def etag_stream(input_stream):
+def etag_stream(input_stream,block_size=1024 * 1024 * 4):
     """计算输入流的etag:
     Args:
         input_stream: 待计算etag的二进制流
     Returns:
         输入流的etag值
     """
-    array = [_sha1(block) for block in _file_iter(input_stream, 0, int(Config.block_size))]
+    array = [_sha1(block) for block in _file_iter(input_stream, 0, int(block_size))]
     if len(array) == 0:
         array = [_sha1(b'')]
     if len(array) == 1:
@@ -173,7 +173,7 @@ def etag_stream(input_stream):
     return urlsafe_base64_encode(prefix + data)
 
 
-def etag(filePath):
+def etag(filePath,block_size=1024 * 1024 * 4):
     """计算文件的etag:
     Args:
         filePath: 待计算etag的文件路径
@@ -190,7 +190,7 @@ def etag(filePath):
         debug('最后一次修改的时间:{0}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_stat.st_mtime))))
         # 查看文件的上次访问时间
         debug('上次访问的时间:{0}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_stat.st_atime))))
-        return etag_stream(f)
+        return etag_stream(f,block_size)
 
 
 def entry(bucket, key):
