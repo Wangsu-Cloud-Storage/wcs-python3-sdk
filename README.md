@@ -140,9 +140,9 @@ wcscmd list wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 ```
 
 #### wcscmd[列举空间所有文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
-空间test的列举结果会保存在当前目录的result文件中
+空间test的列举结果会保存在当前目录的result文件中，如果指定了prefix，则只列举prefix前缀的所有文件，如果指定了marker，则只列举marker后的所有文件
 ```
-wcscmd listall wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
+wcscmd listall wcs://BUCKET ./result [--prefix xxx] [--marker xxx]
 ```
 
 #### wcscmd下载文件
