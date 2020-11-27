@@ -113,6 +113,9 @@ Get fops task results
 	wcscmd fopsStatus  persistentId
 Get fmgr task results
 	wcscmd fmgrStatus  persistentId
+Get bucket stat
+	wcscmd bucketstat  bucket1[|bucket2|...] [--startdate --enddate --islistdetail --storagetype]
+
 ```
 
 #### wcscmd[普通上传](https://wcs.chinanetcenter.com/document/API/FileUpload/Upload)
@@ -183,6 +186,13 @@ wcscmd mv wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
 #### wcscmd[复制文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/copy)
 ```
 wcscmd cp wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
+```
+
+
+#### wcscmd[查看空间存储量](https://wcs.chinanetcenter.com/document/API/ResourceManage/bucketstat)
+```
+wcscmd bucketstat 空间名 //查询空间昨天到今天的存储量
+wcscmd bucketstat 空间1|空间2 --startdate yyyy-mm-dd --enddate yyyy-mm-dd storagetype Standard  //查询空间1和空间2，指定时间访问，指定存储类型的存储量
 ```
 
 

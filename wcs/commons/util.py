@@ -5,6 +5,7 @@ import base64
 import os,re,time
 import logging
 import crcmod
+import datetime
 
 from wcs.commons.compat import b, s
 import tempfile
@@ -224,3 +225,9 @@ def https_check(url):
     #     return "https://" + url
     # else:
     #     return "http://" + url
+
+def get_afterdate(days=1):
+    today = datetime.date.today()
+    afterdate = today + datetime.timedelta(days=days)
+    aftertime = afterdate.strftime("%Y-%m-%d")
+    return aftertime

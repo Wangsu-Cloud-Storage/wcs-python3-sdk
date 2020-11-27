@@ -12,7 +12,7 @@ from ast import  literal_eval
 import chardet
 import requests
 import urllib.request
-from wcs.commons.util import file_crc64
+from wcs.commons.util import file_crc64,get_afterdate
 from wcs.__init__ import __version__
 from wcs.commons.error_deal import ParameterError
 
@@ -20,14 +20,12 @@ def output(message):
     sys.stdout.write(message + '\n')
     sys.stdout.flush()
 
-
 def format_commands(progname, commands_list):
     # Define commands display format
     help = "Commands:" + "\n"
     for cmd in commands_list:
         help += "   %s\n    	%s %s %s \n" % (cmd["label"], progname, cmd["cmd"], cmd["param"])
     return help
-
 
 def get_commands_list():
     # Return all commands list of wcscmd
@@ -47,11 +45,11 @@ def get_commands_list():
         {"cmd": "fops", "label": "Fops audio/video processing ", "param": "wcs://BUCKET/OBJECT fopsparm", "func": cmd_fops, "argc": 2},
         {"cmd": "fopsStatus", "label": "Get fops task results ", "param": "persistentId", "func": cmd_fopsstatus, "argc": 1},
         {"cmd": "fmgrStatus", "label": "Get fmgrStatus task results ", "param": "persistentId", "func": cmd_fmgrstatus, "argc": 1},
-        {"cmd": "crc64", "label": "Calculating 64-bit CRC value ", "param": "filePath", "func": cmd_crc64, "argc": 1}
+        {"cmd": "crc64", "label": "Calculating 64-bit CRC value ", "param": "filePath", "func": cmd_crc64, "argc": 1},
+        {"cmd": "bucketstat", "label": "Get bucket storage", "param": "\"bucket1|bucket2|...\"", "func": cmd_bucketstat, "argc": 1},
     ]
 
-
-def cmd_list(args):
+def cmd_list(args,options=None):
     # Define implementation of List Objects API
     cfg = Config()
     cli = Client(cfg)
@@ -76,7 +74,7 @@ def cmd_list(args):
     except Exception as E:
         error(E)
 
-def cmd_listall(args):
+def cmd_listall(args,options=None):
     # Define implementation of List Objects API
     cfg = Config()
     cli = Client(cfg)
@@ -109,7 +107,7 @@ def cmd_listall(args):
     except Exception as E:
         error(E)
 
-def cmd_get(args):
+def cmd_get(args,options=None):
     # Define implementation of download file from URL
     cfg = Config()
     try:
@@ -171,7 +169,7 @@ def _simple_arg_parse(arg):
     return bucket, obj
 
 
-def cmd_del(args):
+def cmd_del(args,options=None):
     # Define implementation of Object Delete API
     cli = Client(Config())
     bucket, obj = _simple_arg_parse(args[0])
@@ -196,21 +194,21 @@ def _couple_args_parse(args):
     return srcbucket, srcobject, dstbucket, dstobject
 
 
-def cmd_mv(args):
+def cmd_mv(args,options=None):
     # Define implementation of Synchronous move API
     cli = Client(Config())
     srcbk, srcob, dstbk, dstob = _couple_args_parse(args)
     debug(cli.move(srcbk, srcob, dstbk, dstob))
 
 
-def cmd_cp(args):
+def cmd_cp(args,options=None):
     # Define implementation of Synchronous copy API
     cli = Client(Config())
     srcbk, srcob, dstbk, dstob = _couple_args_parse(args)
     debug(cli.copy(srcbk, srcob, dstbk, dstob))
 
 
-def cmd_setdeadline(args):
+def cmd_setdeadline(args,options=None):
     # Define implementation of Set Deadline API
     cli = Client(Config())
     bucket, obj = _simple_arg_parse(args[0])
@@ -218,14 +216,14 @@ def cmd_setdeadline(args):
     debug(cli.setdeadline(bucket, obj, deadline))
 
 
-def cmd_stat(args):
+def cmd_stat(args,options=None):
     # Define implementation of stat API
     cli = Client(Config())
     bucket, obj = _simple_arg_parse(args[0])
     debug(cli.stat(bucket, obj))
 
 
-def cmd_put(args):
+def cmd_put(args,options=None):
     # Define implementation of simple upload API
     cfg = Config()
     cli = Client(cfg)
@@ -236,7 +234,7 @@ def cmd_put(args):
     debug(cli.simple_upload(local, bucket, obj))
 
 
-def cmd_multiput(args):
+def cmd_multiput(args,options=None):
     # Define implementation of multipart upload
     cfg = Config()
     cli = Client(cfg)
@@ -247,13 +245,13 @@ def cmd_multiput(args):
     debug(cli.multipart_upload(local, bucket, obj, cfg.upload_id))
 
 
-def cmd_listbucket(args):
+def cmd_listbucket(args,options=None):
     #
     cli = Client(Config())
     debug(cli.list_buckets())
 
 
-def cmd_delprefix(args):
+def cmd_delprefix(args,options=None):
     bucket = args[0].split("wcs://")[1]
     prefix = args[1]
     cli = Client(Config())
@@ -261,7 +259,7 @@ def cmd_delprefix(args):
     debug(cli.prefix_delete(fops))
 
 
-def cmd_fops(args):
+def cmd_fops(args,options=None):
     # Define implementation of Fops API
     cli = Client(Config())
     bucket,obj = _simple_arg_parse(args[0])
@@ -269,20 +267,20 @@ def cmd_fops(args):
     debug(cli.ops_execute(fops,bucket,obj))
 
 
-def cmd_fopsstatus(args):
+def cmd_fopsstatus(args,options=None):
     # Define implementation of fops status API
     cli = Client(Config())
     persistentId = args[0]
     debug(cli.ops_status(persistentId))
 
 
-def cmd_fmgrstatus(args):
+def cmd_fmgrstatus(args,options=None):
     # Define implementation of fmgr status API
     cli = Client(Config())
     persistentId = args[0]
     debug(cli.fmgr_status(persistentId))
 
-def cmd_crc64(args):
+def cmd_crc64(args,options=None):
     #calculating 64-bit CRC value
     try:
         file_path = args[0]
@@ -294,6 +292,16 @@ def cmd_crc64(args):
             error('Calculating faile,Reasons for failure: file not found .')
     except Exception as e:
         error('Some error occurred. {0}'.format(e))
+
+def cmd_bucketstat(args,options=None):
+    # Define implementation of stat API
+    cli = Client(Config())
+    bucket = args[0]
+    startdate =options.startdate  if options.startdate else get_afterdate(-1)
+    enddate =options.enddate  if options.enddate else get_afterdate(0)
+    storagetype = options.storagetype if options.storagetype else None
+    islistdetails = options.islistdetails if options.islistdetails else 'false'
+    debug(cli.bucket_stat(bucket, startdate,enddate,isListDetails=islistdetails,storageType=storagetype))
 
 
 def run_configure(config_file):
@@ -427,9 +435,11 @@ def main():
     optparser.add_option("--detectntyurl", dest="detectntyurl", help="Url for detect notify")
     optparser.add_option("--detectntyrule", dest="detectntyrule", help="RUle for ectect notify")
     optparser.add_option("--hashalgorithm", dest="hashalgorithm", help="Hash algorithm, currently supports 'crc64ecma' for calculating 64-bit CRC value.")#add by caiyz 2020-07-13
-
-    optparser.set_description("Wcscmd is a tool for managing objects in WCS Object Storage."
-                              + " It allows for uploading, downloading and removing objects form buckets")
+    optparser.add_option("--startdate", dest="startdate", help="Start date")
+    optparser.add_option("--enddate", dest="enddate", help="End date")
+    optparser.add_option("--islistdetails", dest="islistdetails", help="Is list details")
+    optparser.add_option("--storagetype", dest="storagetype", help="storage type")
+    optparser.set_description("Wcscmd is a tool for managing objects in WCS Object Storage." + " It allows for uploading, downloading and removing objects form buckets")
 
     optparser.epilog = format_commands(optparser.get_prog_name(), commands_list)
     optparser.epilog += "\n\nFor more information, visit WCS website: https://wcs.chinanetcenter.com/index\n"
@@ -543,7 +553,7 @@ def main():
         if len(args) > commands[command]["argc"]:
             error(u"Too much parameters for command '%s'" % command)
             sys.exit()
-    rc = cmd_func(args)
+    rc = cmd_func(args,options)
     if rc is None:
         rc = "Nothing"
     return rc

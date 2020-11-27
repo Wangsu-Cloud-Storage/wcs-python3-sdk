@@ -108,9 +108,11 @@ class BucketManager(MgrBase):
         debug('Now start to list buckets')
         return _get(url=url, headers=super(BucketManager, self)._gernerate_headers(url))
 
-    def bucket_stat(self, name, startdate, enddate):
+    def bucket_stat(self, name, startdate, enddate,isListDetails='false',storageType=None):
         encode_name = urlsafe_base64_encode(name)
-        options = {'name':encode_name, 'startdate':startdate, 'enddate':enddate}
+        options = {'name':encode_name, 'startdate':startdate, 'enddate':enddate,'isListDetails':isListDetails}
+        if storageType:
+            options['storageType']=str(storageType)
         url = https_check(self._make_url('bucket/stat', options))
         debug('Now check storage of %s from %s to %s' % (name, startdate, enddate))
         return _get(url=url, headers=super(BucketManager, self)._gernerate_headers(url))
@@ -121,7 +123,6 @@ class BucketManager(MgrBase):
         url = https_check(self._make_url('bucket/statistics', options))
         debug('Now get bucket %s of %s from %s to %s' % (stype, name, startdate, enddate))
         return _get(url=url, headers=super(BucketManager, self)._gernerate_headers(url))
-
 
     # 图片鉴定（https://wcs.chinanetcenter.com/document/API/Image-op/imageDetect）
     # add by laihy 20200609
