@@ -11,7 +11,7 @@ from wcs.commons.logme import debug, error
 from wcs.commons.util import https_check
 from requests.adapters import HTTPAdapter
 from wcs.commons.config import Config
-
+from wcs import __version__
 #config_file = os.path.join(expanduser("~"), ".wcscfg")
 
 
@@ -39,7 +39,7 @@ class SimpleUpload(object):
         encoder = MultipartEncoder(fileds)
         headers = {"Content-Type": encoder.content_type}
         headers['Expect'] = '100-continue'
-        headers['user-agent'] = "WCS-Python-SDK-4.0.0(http://wcs.chinanetcenter.com)"
+        headers['user-agent'] = "WCS-Python3-SDK-{0}(http://wcs.chinanetcenter.com)".format(__version__)
         m = encoder.to_string()
         return url, m, headers
 
