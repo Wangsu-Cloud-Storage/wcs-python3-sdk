@@ -50,7 +50,7 @@ class WcsTestCases(unittest.TestCase):
         path = '/root/caiyz/data/14M'
         key = '100-2M'
         self.cfg.overwrite =1
-        debug(self.cli.smart_upload(path, self.bucket, key, multi_size=10))
+        debug(self.cli.smart_upload(path, self.bucket, key, 10))
 
     #列举空间
     def test_bucket_list(self):
