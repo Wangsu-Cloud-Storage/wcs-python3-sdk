@@ -46,6 +46,13 @@ class WcsTestCases(unittest.TestCase):
         return_data = self.cli.multipart_upload(path, self.bucket, key)
         debug(return_data)
         self.assertEqual(return_data[0],200)
+        
+    #智能上传（文件大于10M启用分片上传）
+    def test_samrt_upload(self):
+        path = '/root/caiyz/data/14M'
+        key = '100-2M'
+        self.cfg.overwrite =1
+        debug(self.cli.smart_upload(path, self.bucket, key, multi_size=10))
 
     #列举空间
     def test_bucket_list(self):
