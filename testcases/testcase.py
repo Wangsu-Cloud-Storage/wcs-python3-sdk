@@ -24,7 +24,6 @@ class WcsTestCases(unittest.TestCase):
     def test_simple_upload(self):
         key = '20180408.jpg'
         path = self.filepath
-        self.cfg.overwrite = 1
         return_data = self.cli.simple_upload(path, self.bucket, key)
         debug(return_data)
         self.assertEqual(return_data[0],200)
@@ -33,12 +32,11 @@ class WcsTestCases(unittest.TestCase):
     def test_stream_upload(self):
         stream = 'http://big-caiyz-fmgr-cache.com/1m.jpg'
         key = '1m.jpg'
-        self.cfg.overwrite = 1
         return_data = self.cli.stream_upload(stream, self.bucket, key)
         debug(return_data)
         self.assertEqual(return_data[0],200)
 
-    #分片上传
+    #分片上传（有同名文件直接覆盖）
     def test_multipart_upload(self):
         path = 'F:\\5_.zip'
         key = '5_.zip'
@@ -47,7 +45,7 @@ class WcsTestCases(unittest.TestCase):
         debug(return_data)
         self.assertEqual(return_data[0],200)
         
-    #智能上传（文件大于10M启用分片上传）
+    #智能上传（文件大于10M启用分片上传，有同名文件直接覆盖）
     def test_samrt_upload(self):
         path = '/root/caiyz/data/14M'
         key = '100-2M'
