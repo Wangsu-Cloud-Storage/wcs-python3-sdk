@@ -231,6 +231,8 @@ from wcs.services.client import Client
 
 config_file = os.path.join(expanduser("~"), ".wcscfg")
 cfg = Config(config_file) #加载配置文件
+cfg.force=1  #配置fmgr任务覆盖同名文件，默认为不覆盖
+cfg.overwrite=1 #配置文件上传操作覆盖同名文件，默认为不覆盖
 cli = Client(cfg) 初始化Client
 ```
 
