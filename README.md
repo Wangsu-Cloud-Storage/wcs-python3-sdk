@@ -6,14 +6,15 @@ wcs-python-sdk从v4.0.0版本开始，既可作为Python SDK使用，也可作�
 
 * SDK的功能包括：文件上传、资源管理、高级资源管理、持久化处理、相应操作状态查询以及直播录制文件查询。
 * 命令行工具的功能包括：普通上传、分片上传、资源管理、按前缀删除文件
-* 此Python SDK适用于python 3.X，如需python 2.x版本请参考：[wcs-python2-sdk](https://github.com/Wangsu-Cloud-Storage/wcs-python-sdk)
+* 此Python SDK适用于python 2.X
 
 ## 安装
 推荐使用pip安装
 
 * 直接安装
 ```
-pip install wcs-python3-sdk
+Python2：pip install wcs-python-sdk
+Python3：pip install wcs-python3-sdk
 ```
 
 * 更新方式
@@ -112,28 +113,23 @@ Get fops task results
 	wcscmd fopsStatus  persistentId
 Get fmgr task results
 	wcscmd fmgrStatus  persistentId
-Get bucket stat
-	wcscmd bucketstat  bucket1[|bucket2|...] [--startdate --enddate --islistdetail --storagetype]
-
 ```
 
 #### wcscmd[普通上传](https://wcs.chinanetcenter.com/document/API/FileUpload/Upload)
 
-上传策略可以通过编辑.wcscfg文件中相应的配置项进行定义，也可以通过命令行的option进行临时配置,
+上传策略可以通过编辑.wcscfg文件中响应的配置项进行定义，也可以通过命令行的option进行临时配置,
 ```
 wcscmd put wcs://BUCKET/OBJECT localPath  --overwrite 1
 ```
 
 #### wcscmd[分片上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-上传策略可以通过编辑.wcscfg文件中相应的配置项进行定义，也可以通过命令行的option进行临时配置，如果需要进行断点续传需要增加--upload-id这个option，这个upload-id的优先级高于在.wcscfg中配置的upload id
+上传策略可以通过编辑.wcscfg文件中响应的配置项进行定义，也可以通过命令行的option进行临时配置，如果需要进行断点续传需要增加--upload-id这个option，这个upload-id的优先级高于在.wcscfg中配置的upload id
 ```
 wcscmd multiput wcs://BUCKET/OBJECT localPath --upload-id 3IL3ce3kR6kDf4sihxh0LcWUpzTYEKFf
 ```
 
 #### wcscmd[列举空间列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/listbucket)
-```
-wcscmd listbucket
-```
+```wcscmd listbucket```
 
 #### wcscmd[列举空间文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
 空间test的列举结果会保存在当前目录的result文件中
@@ -142,10 +138,9 @@ wcscmd list wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 ```
 
 #### wcscmd[列举空间所有文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
-空间test的列举结果会保存在当前目录的result文件中，如果指定了prefix，则只列举prefix前缀的所有文件，如果指定了marker，则只列举marker后的所有文件
+空间test的列举结果会保存在当前目录的result文件中
 ```
-wcscmd listall wcs://BUCKET ./result [--prefix xxx] [--marker xxx]
-```
+wcscmd listall wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 
 #### wcscmd下载文件
 未带filename 参数，下载的文件默认会与源文件同名，并保存在当前目录下
@@ -156,9 +151,7 @@ wcscmd get [URL] [filename]
 ```
 
 #### wcscmd[获取文件信息](https://wcs.chinanetcenter.com/document/API/ResourceManage/stat)
-```
-wcscmd stat wcs://BUCKET/OBJECT
-```
+```wcscmd stat wcs://BUCKET/OBJECT```
 
 #### wcscmd[设置文件保存期限](https://wcs.chinanetcenter.com/document/API/ResourceManage/setdeadline)
 保存时间单位为天，0表示尽快删除，-1表示取消过期时间，永久保存,要设置-1的时候，需要将整个包含在引号内
@@ -168,9 +161,7 @@ wcscmd setdeadline wcs://BUCKET/OBJECT '"-1"'
 ```
 
 #### wcscmd[删除文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/delete)
-```
-wcscmd del wcs://BUCKET/OBJECT
-```
+```wcscmd del wcs://BUCKET/OBJECT```
 
 #### wcscmd[按前缀删除文件](https://wcs.chinanetcenter.com/document/API/Fmgr/deletePrefix)
 ```
@@ -178,21 +169,10 @@ wcscmd deletePrefix wcs://BUCKET test-prefix
 ```
 
 #### wcscmd[移动文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/move)
-```
-wcscmd mv wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
-```
+```wcscmd mv wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT```
 
 #### wcscmd[复制文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/copy)
-```
-wcscmd cp wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
-```
-
-
-#### wcscmd[查看空间存储量](https://wcs.chinanetcenter.com/document/API/ResourceManage/bucketstat)
-```
-wcscmd bucketstat 空间名 //查询空间昨天到今天的存储量
-wcscmd bucketstat 空间1|空间2 --startdate yyyy-mm-dd --enddate yyyy-mm-dd storagetype Standard  //查询空间1和空间2，指定时间访问，指定存储类型的存储量
-```
+```wcscmd cp wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT```
 
 
 ## 计算文件etag值
@@ -230,13 +210,11 @@ from wcs.services.client import Client
 
 config_file = os.path.join(expanduser("~"), ".wcscfg")
 cfg = Config(config_file) #加载配置文件
-cfg.force=1  #配置fmgr任务覆盖同名文件，默认为不覆盖
-cfg.overwrite=1 #配置文件上传操作覆盖同名文件，默认为不覆盖
 cli = Client(cfg) 初始化Client
 ```
 
 #### [普通上传](https://wcs.chinanetcenter.com/document/API/FileUpload/Upload)
-上传策略通过编辑.wcscfg文件中相应的配置项进行定义
+上传策略通过编辑.wcscfg文件中响应的配置项进行定义
 ```
 key = ''
 bucket = ''
@@ -245,7 +223,7 @@ cli.simple_upload(filepath, bucket, key)
 ```
 
 #### [分片上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-上传策略通过编辑.wcscfg文件中相应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
+上传策略通过编辑.wcscfg文件中响应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
 ```
 key = ''
 bucket = ''
@@ -256,12 +234,14 @@ cli.multipart_upload(filepath, bucket, key，upload_id)
 另外，当前上传记录的格式是在tmp\_record\_folder目录下，生成已当前上传任务的upload id命名的目录，然后在目录tmp\_record\_folder/upload id下生成多个文件，每个文件以块offset命名，并记录了这个块的上传结果
 
 #### [高级上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-1. 该接口用于自动选择是原子上传还是分片上传，默认的multi_size 为20M （入参单位为M），小于等于20M 使用原子上传，大于20M使用分片上传
+1 该接口用于自动选择是原子上传还是分片上传，默认的multi_size 为20M （入参单位为M），小于等于20M 使用原子上传，大于20M使用分片上传
+2 上传策略通过编辑.wcscfg文件中响应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
 ```
 key = ''
 bucket = ''
 filepath = ''
-cli.smart_upload(filepath, bucket, key, 20)
+upload_id = ''
+cli.smart_upload(filepath, bucket, key，upload_id,multi_size)
 ```
 另外，当前上传记录的格式是在tmp\_record\_folder目录下，生成已当前上传任务的upload id命名的目录，然后在目录tmp\_record\_folder/upload id下生成多个文件，每个文件以块offset命名，并记录了这个块的上传结果
 
