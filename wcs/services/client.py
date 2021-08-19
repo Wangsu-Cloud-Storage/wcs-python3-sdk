@@ -146,7 +146,7 @@ class Client(object):
 
     def bucket_stat(self, name, startdate, enddate,isListDetails='false',storageType=None):
         bmgr = BucketManager(self.auth,self.cfg.mgr_url)
-        return bmgr.bucket_stat(name, startdate, enddate,isListDetails='false',storageType=storageType)
+        return bmgr.bucket_stat(name, startdate, enddate,isListDetails=isListDetails,storageType=storageType)
 
     def bucket_statistics(self, name, stype, startdate, enddate, isListDetails='false'):
         bmgr = BucketManager(self.auth,self.cfg.mgr_url)

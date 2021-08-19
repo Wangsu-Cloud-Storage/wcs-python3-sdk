@@ -231,3 +231,9 @@ def get_afterdate(days=1):
     afterdate = today + datetime.timedelta(days=days)
     aftertime = afterdate.strftime("%Y-%m-%d")
     return aftertime
+
+#鉴权token 使用的deadline时间格式
+def datetime_timestamp(seconds):
+    current = int(time.mktime(datetime.datetime.now().timetuple())) * 1000
+    token_time =  current + int(seconds)*1000
+    return token_time

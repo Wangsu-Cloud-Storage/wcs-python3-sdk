@@ -6,18 +6,16 @@ class PutPolicy(object):
         self.putpolicy = {}
         self.policy = set(
                 ['scope', 'deadline', 'saveKey', 'fsizeLimit', 'overwrite', 'returnUrl', 'returnBody', 'callbackUrl',
-                 'callbackBody', 'persistentNotifyUrl', 'persistentOps', 'separate', 'instant', 'detectNotifyRule',
+                 'callbackBody', 'persistentNotifyUrl', 'persistentOps','contentDetect', 'separate', 'instant', 'detectNotifyRule',
                  'detectNotifyURL','hashAlgorithm'])
 
     def set_conf(self, key, value):
-
         if key in self.policy:
             self.putpolicy[key] = value
         else:
             print("invalid putpolicy param\n")
 
     def get_conf(self, key):
-
         if key in self.policy:
             return key + ":" + self.putpolicy[key]
         else:
@@ -46,3 +44,5 @@ class PutPolicy(object):
             self.set_conf('detectNotifyRule', str(cfg.detectNotifyRule))
         if cfg.hashAlgorithm:
             self.set_conf('hashAlgorithm', str(cfg.hashAlgorithm))
+        if cfg.deadline:
+            self.set_conf('deadline', str(cfg.deadline))

@@ -5,10 +5,9 @@ import sys
 import io
 from inspect import isfunction
 
-from wcs.commons.logme import debug,error,warning
+#from wcs.commons.logme import debug,error,warning
 
 class Config(object):
-
     _instance = None
     _parsed_files = []
     access_key = ''
@@ -74,6 +73,7 @@ class Config(object):
     detectNotifyURL = ''
     detectNotifyRule = ''
     hashAlgorithm = ''
+    deadline = 7200  # token过期时间,默认2小时
 
     ## Creating a singleton
     def __new__(self, configfile=None, ak=None, sk=None, put_url=None, mgr_url=None ):
@@ -86,8 +86,8 @@ class Config(object):
             try:
                 self.read_config_file(configfile)
             except IOError as e:  # 这里尚未确定读取配置文件异常如何处理
-                error("Can't read config file ")
-                sys.exit()
+                raise ("Can't read config file ")
+                #sys.exit()
 
     def option_list(self):
         retval = []
@@ -157,7 +157,7 @@ class ConfigParser(object):
                         try: #caiyz 20180315 添加异常处理
                             print_value = ("%s...%d_chars...%s") % (data["value"][-2], len(data["value"]) - 3, data["value"][-1:1])
                         except IndexError as e:
-                            debug(u"{} is empty".format(data["key"]))
+                            raise (u"{} is empty".format(data["key"]))
                     else:
                         print_value = data["value"]
                     #debug("ConfigParser: %s->%s" % (data["key"], print_value))
