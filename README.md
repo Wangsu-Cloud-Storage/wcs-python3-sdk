@@ -74,7 +74,7 @@ separate  #处理指令是否分开通知
 tmp_record_folder  #分片上传上传进度记录目录
 upload_id   #分片上传断点续传的任务id
 hashalgorithm #请求策略带该参数，且值为crc64ecma，文件上传成功后，响应结果中含有文件的crc64信息
-deadline #token 过期时间,默认2小时
+deadline #token 过期时间，单位秒,默认为7200（2小时）
 ```
 
 
