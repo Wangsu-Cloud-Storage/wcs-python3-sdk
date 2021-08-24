@@ -142,6 +142,7 @@ wcscmd list wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
 空间test的列举结果会保存在当前目录的result文件中
 ```
 wcscmd listall wcs://BUCKET ./result --limit 4  --marker IUAjJCVeJiovNTcuanBnOi0x
+```
 
 #### wcscmd下载文件
 未带filename 参数，下载的文件默认会与源文件同名，并保存在当前目录下
