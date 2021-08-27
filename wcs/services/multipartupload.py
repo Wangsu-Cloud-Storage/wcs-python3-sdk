@@ -174,6 +174,7 @@ class MultipartUpload(object):
                 debug('make block fail,code :{0},message :{1}'.format(blkcode, blktext))
             else:
                 result = self._make_bput(f, blktext['ctx'], offset)
+                self.results_queue.put(200)
         self._print_process(self.results_queue)#打印当前的上传进度
         #self._record_upload_progress(result,size)
         return blkcode,result,size
@@ -201,7 +202,7 @@ class MultipartUpload(object):
             offset_next = offset + bputtext['offset']
             bput_next = readfile(f, offset_next, self.bput_size)
             bputnum += 1
-        self.results_queue.put(200)
+        #self.results_queue.put(200)
         return offset, bputcode, bputtext['ctx']
 
     def _is_complete(self):
@@ -285,6 +286,8 @@ class MultipartUpload(object):
             if self.concurrency > 0:
                 with ThreadPool(self.concurrency) as pool:
                     result_list  = pool.map(self._make_block, offsets)
+                    pool.close()
+                    pool.join()
                 for result_keys in result_list:
                     blkcode,result,size = result_keys
                     self._record_upload_progress(result,size)
@@ -325,6 +328,8 @@ class MultipartUpload(object):
             if self.concurrency > 0:
                 with ThreadPool(self.concurrency) as pool:
                     result_list = pool.map(self._make_block, offsets)
+                    pool.close()
+                    pool.join()
                 for result_keys in result_list:
                     blkcode,result,size = result_keys
                     self._record_upload_progress(result,size)
