@@ -306,11 +306,9 @@ class MultipartUpload(object):
             debug('Now all blocks have upload suc.')
             return self._make_file()
         else:
-            fail_list = self._get_failoffsets()
             upload_record = str(Config.tmp_record_folder) + self.uploadBatch
             debug('Sorry! Mulitpart upload fail,more detail see %s' % upload_record)
             return self.results
-            #raise Exception("Multipart upload fail")
 
     def smart_upload(self,path,token,upload_id=None):
         self._define_config(path,token,upload_id)
@@ -336,7 +334,6 @@ class MultipartUpload(object):
 
             elif self.concurrency == 0:
                 for offset in offsets:
-                    #return_code = self._make_block(offset)
                     return_code ,result,size= self._make_block(offset)
                     self._record_upload_progress(result,size)
                     if 400 <= int(return_code) <= 499:
