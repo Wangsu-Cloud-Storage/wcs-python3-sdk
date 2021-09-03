@@ -4,7 +4,7 @@
 import os,sys
 import time,datetime
 from os.path import expanduser
-from multiprocessing import Lock,Queue
+from multiprocessing import Lock,Manager
 from multiprocessing.dummy import Pool as ThreadPool
 from wcs.commons.config import Config
 from wcs.commons.http import _post
@@ -50,7 +50,7 @@ class MultipartUpload(object):
         self.uploadBatch = ''
         self.progress = 0
         self.recorder = None
-        self.results_queue = Queue()
+        self.results_queue = Manager().Queue()
         self.cfg = Config()
         try:
             self.concurrency = int(self.cfg.concurrency)
@@ -207,7 +207,7 @@ class MultipartUpload(object):
 
     def _is_complete(self):
         self.results = self.recorder.get_upload_record()
-        debug(self.results)
+        # debug(self.results) //20210903 caiyz ctx 信息不再打印出来
         if len(self.results['upload_record']) < self.blocknum:
             return 0
         for result in self.results['upload_record']:
