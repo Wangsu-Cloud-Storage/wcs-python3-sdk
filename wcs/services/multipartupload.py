@@ -61,7 +61,7 @@ class MultipartUpload(object):
             sys.exit()
 
     def __need_retry(self,code):
-        if code == 500 or code == -1:
+        if code == 500 or code == -1 or code == 408:
             return True
         return False
 
@@ -176,7 +176,6 @@ class MultipartUpload(object):
                 result = self._make_bput(f, blktext['ctx'], offset)
                 self.results_queue.put(200)
         self._print_process(self.results_queue)#打印当前的上传进度
-        #self._record_upload_progress(result,size)
         return blkcode,result,size
 
     def _make_bput(self, f, ctx, offset):
@@ -238,12 +237,17 @@ class MultipartUpload(object):
         return offsetlist
 
     def _get_blkstatus(self):
-        blkstatus = []
-        for offset in [i * (self.block_size) for i in range(0,self.blocknum)]:
-            for result in self.results['upload_record']:
-                result = eval(result)
-                if offset == result['offset']:
-                    blkstatus.append(result['ctx'])
+        ###注释代码执行时间过长，遗弃
+        # blkstatus = []
+        # for offset in [i * (self.block_size) for i in range(0,self.blocknum)]:
+        #     for result in self.results['upload_record']:
+        #         result = eval(result)
+        #         if offset == result['offset']:
+        #             blkstatus.append(result['ctx'])
+        # return blkstatus
+        new_result = [eval(result) for result in self.results['upload_record']]
+        new_result_sort = sorted(new_result, key=lambda k: k['offset'], reverse=False)
+        blkstatus = [result['ctx'] for result in new_result_sort]
         return blkstatus
 
     def _make_file(self):
