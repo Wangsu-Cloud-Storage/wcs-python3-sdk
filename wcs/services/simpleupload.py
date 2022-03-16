@@ -40,6 +40,11 @@ class SimpleUpload(object):
         headers = {"Content-Type": encoder.content_type}
         headers['Expect'] = '100-continue'
         headers['user-agent'] = "WCS-Python3-SDK-{0}(http://wcs.chinanetcenter.com)".format(__version__)
+        try:
+            if int(self.cfg.traffic_limit):
+                headers['x-wos-traffic-limit'] = '{0}'.format(self.cfg.traffic_limit)
+        except Exception as e:
+            raise ValueError('traffic_limit parameter configuration error：{0}'.format(self.cfg.traffic_limit))
         m = encoder.to_string()
         return url, m, headers
 

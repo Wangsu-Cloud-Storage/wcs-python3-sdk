@@ -241,5 +241,5 @@ class Client(object):
         return pfops.fops_status(persistentId)
 
     def wslive_list(self,channelname, startTime, endTime, bucket, start=None, limit=None):
-        wsl = WsLive(self.auth,config.mgr_url)
+        wsl = WsLive(self.auth,self.cfg.mgr_url)
         return wsl.wslive_list( channelname, startTime, endTime, bucket, start, limit)

@@ -16,6 +16,7 @@ class ParameterError(Exception):
 
     def __str__(self):
         return self.parameter
+
 class WcsSeriveError(Exception):
     '''
     server error
