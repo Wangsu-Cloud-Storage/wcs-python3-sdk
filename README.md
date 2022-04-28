@@ -139,7 +139,7 @@ wcscmd list wcs://BUCKET ./result --limit 1000  --marker IUAjJCVeJiovNTcuanBnOi0
 ```
 
 #### wcscmd[列举空间所有文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
-自动递归列举空间所有文件列表（没次列举1000个文件并自动往后列举直到完成），如下例中会列举空间test的所有文件列表并保存在当前目录的result文件中
+自动递归列举空间所有文件列表（每次列举1000个文件并自动往后列举直到完成），如下例中会列举空间test的所有文件列表并保存在当前目录的result文件中
 ```
 wcscmd listall wcs://BUCKET ./result
 ```
