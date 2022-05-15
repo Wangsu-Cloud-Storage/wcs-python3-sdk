@@ -1,54 +1,53 @@
-# WCS Python SDK用户文档
+# WCS Python SDK使用说明
 ## [README of English](https://github.com/Wangsu-Cloud-Storage/wcs-python-sdk/blob/master/README-EN.md)
+- [概览](#概览)
+- [安装](#安装)
+- [命令行工具使用](#命令行工具使用)
+- [SDK使用](#sdk使用)
 
 ## 概览
-wcs-python-sdk从v4.0.0版本开始，既可作为Python SDK使用，也可作为命令行工具使用
-
-* SDK的功能包括：文件上传、资源管理、高级资源管理、持久化处理、相应操作状态查询以及直播录制文件查询。
-* 命令行工具的功能包括：普通上传、分片上传、资源管理、按前缀删除文件
-* 此Python SDK适用于python 2.X
+1. wcs-python-sdk既可作为网宿对象存储SDK使用，也可作为命令行工具使用。
+2. 此Python SDK适用于python 3.X，如需python 2.x版本请参考：[wcs-python-sdk](https://github.com/Wangsu-Cloud-Storage/wcs-python-sdk)
+3. 网宿对象存储API介绍：https://www.wangsu.com/document/644/21558
 
 ## 安装
-推荐使用pip安装
+使用pip安装
 
 * 直接安装
 ```
-Python2：pip install wcs-python-sdk
-Python3：pip install wcs-python3-sdk
+pip install wcs-python3-sdk
 ```
 
 * 更新方式
 ```
-Python2：pip install -U wcs-python-sdk
-Python3：pip install -U wcs-python3-sdk
+pip install -U wcs-python3-sdk
 ```
 
-## 初始化
-在使用SDK之前，您需要获得一对有效的AccessKey和SecretKey签名授权。
+## 命令行工具使用
 
-可以通过如下方法获得：
+### 初始化
+1、在使用SDK之前，您需要获得一对有效的AccessKey和SecretKey签名授权，可以通过如下方法获得：
+* 开通网宿对象存储服务
+* 登录 [网宿统一控制台](https://wos.console.wangsu.com) ，在个人中心-用户信息管理-AccessKey管理查看AccessKey和SecretKey
+* 登录 [网宿统一控制台](https://wos.console.wangsu.com)，在对象存储空间概览查看上传域名（puturl）和管理域名(mgrurl)。
 
-1. 开通网宿云存储账号
-2. 登录网宿SI平台，在安全管理-秘钥管理查看AccessKey和SecretKey
-3. 登录网宿SI平台，在安全管理-域名管理查看上传域名（puturl）和管理域名(mgrurl)。
 
-获取上面4个配置之后，执行如下命令，通过命令行交互的方式对配置信息进行初始化：
-wcscmd --configure
+2、获取所需配置之后，通过命令行交互的方式对配置信息进行初始化：
+`wcscmd --configure`
 
-更新的配置信息会保存在$HOME目录下的.wcscfg文件中，同时可以通过下面的命令打印上一步添加的配置信息：
-wcscmd --dump-config
+3、更新的配置信息会保存在$HOME目录下的.wcscfg文件中，同时可以通过下面的命令打印上一步添加的配置信息：`wcscmd --dump-config`
 
 .wcscfg文件中的配置参数说明如下：
 ```
 access_key  #用户ak
-block_size  #分片上传块大小，默认值4194304，配置时不需要带单位，默认单位为B
+block_size  #分片上传块大小，默认值4194304，配置时不需要带单位，需要配置为4M的整数倍，默认单位为B
 bput_retries  #分片上传，bput请求重传次数
-bput_size  #分片上传块内片大小，默认值524288，配置时不需要带单位，默认单位为B
+bput_size  #分片上传块内片大小，默认值524288，配置时不需要带单位，片大小不能超过块大小，默认单位为B
 callbackBody  #回调上传成功后，服务端提交到callbackurl的数据
 callbackUrl  #回调上传成功后，服务端以POST方式请求该地址
 concurrency  #分片上传的块并发度，当并发度设置为0时为顺序上传
 connection_retries  #请求建立连接时的重传次数
-connection_timeout  #请求建立连接的超时时间
+connection_timeout  #请求建立连接的超时时间，单位为秒
 contentDetect  #文件上传成功后，进行内容鉴定操作
 detectNotifyRule  #鉴定结果通知规则设置
 detectNotifyURL  #接收鉴定结果的通知地址，要求必须是公网URL地址
@@ -72,17 +71,15 @@ returnUrl  #上传成功后，服务端以POST方式请求该地址
 secret_key  #用户sk
 separate  #处理指令是否分开通知
 tmp_record_folder  #分片上传上传进度记录目录
-upload_id   #分片上传断点续传的任务id
-hashalgorithm #请求策略带该参数，且值为crc64ecma，文件上传成功后，响应结果中含有文件的crc64信息
-deadline #token 过期时间，单位秒,默认为7200（2小时）
+upload_id   #非必填，如希望做断点续传，可指定容易识别的唯一字符串标识此次分片上传任务
 ```
 
 
 ## wcscmd命令行工具使用
 
-Windows系统执行命令需要添加python再执行,如python wcscmd --help
+注：Windows系统执行命令需要添加python再执行，如`python wcscmd --help`
 
-#### 查阅工具使用说明
+### 查阅工具使用说明
 ```
 wcscmd --help
 Usage: wcscmd [options] COMMAND [parameters]
@@ -167,75 +164,117 @@ Multipart upload a local file to WCS
 Delete multiple files according to prefix
 	wcscmd deletePrefix wcs://BUCKET PREFIX
 Fops audio/video processing
-	wcscmd fops wcs://BUCKET/OBJECT "fopsparm"  // 避免fopsparam中可能的|导致字符串被切割，可将fopsparam加上双引号
+	wcscmd fops wcs://BUCKET/OBJECT "fopsparam"   // 避免fopsparam中可能的|导致字符串被切割，可将fopsparam加上双引号
 Get fops task results
 	wcscmd fopsStatus  persistentId
 Get fmgr task results
 	wcscmd fmgrStatus  persistentId
 ```
 
-#### wcscmd[普通上传](https://wcs.chinanetcenter.com/document/API/FileUpload/Upload)
-
-上传策略可以通过编辑.wcscfg文件中响应的配置项进行定义，也可以通过命令行的option进行临时配置,
+### wcscmd-普通上传
+直接上传，适用于小文件
 ```
-wcscmd put wcs://BUCKET/OBJECT localPath  --overwrite 1
-```
-
-#### wcscmd[分片上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-上传策略可以通过编辑.wcscfg文件中响应的配置项进行定义，也可以通过命令行的option进行临时配置，如果需要进行断点续传需要增加--upload-id这个option，这个upload-id的优先级高于在.wcscfg中配置的upload id
-```
-wcscmd multiput wcs://BUCKET/OBJECT localPath --upload-id 3IL3ce3kR6kDf4sihxh0LcWUpzTYEKFf
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// OBJCET：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+// localPath：必填，需要上传文件的本地路径，如/tmp/index.html
+wcscmd put wcs://BUCKET/OBJECT localPath
 ```
 
-#### wcscmd[列举空间列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/listbucket)
-```wcscmd listbucket```
-
-#### wcscmd[列举空间文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
-列举空间文件列表，可指定文件条数（最大1000）和起点，如下例子中会列举空间test位置在marker后的1000个文件在当前目录的result文件中
+### wcscmd-分片上传
+分片上传大文件，4M以上的文件即可使用分片上传。
 ```
-wcscmd list wcs://BUCKET ./result --limit 1000  --marker IUAjJCVeJiovNTcuanBnOi0x
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// OBJCET：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+// localPath：必填，需要上传文件的本地路径，如/tmp/index.html
+wcscmd multiput wcs://BUCKET/OBJECT localPath
 ```
 
-#### wcscmd[列举空间所有文件列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
+### wcscmd-列举空间列表
+获取空间列表
+```
+wcscmd listbucket
+```
+
+### wcscmd-列举空间文件列表
+获取指定空间的文件列表
+```
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// localPath： 必填，保存文件列表的本地文件路径
+// --marker：非必填，使用上一个list请求响应的marker作为此次list的起始位置
+wcscmd list wcs://BUCKET localPath --marker <marker>
+```
+
+### wcscmd列举空间所有文件列表
 自动递归列举空间所有文件列表（每次列举1000个文件并自动往后列举直到完成），如下例中会列举空间test的所有文件列表并保存在当前目录的result文件中
 ```
-wcscmd listall wcs://BUCKET ./result
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// localPath：必填，保存文件列表的本地文件名称
+wcscmd listall wcs://BUCKET <localPath>
 ```
 
-#### wcscmd下载文件
-未带filename 参数，下载的文件默认会与源文件同名，并保存在当前目录下
-带有filename 参数，下载文件保存在当前目录下，文件名称为参数filename
-url 需要用''引号包含起来
+### wcscmd-下载文件
+下载文件
 ```
-wcscmd get [URL] [filename]
-```
-
-#### wcscmd[获取文件信息](https://wcs.chinanetcenter.com/document/API/ResourceManage/stat)
-```wcscmd stat wcs://BUCKET/OBJECT```
-
-#### wcscmd[设置文件保存期限](https://wcs.chinanetcenter.com/document/API/ResourceManage/setdeadline)
-保存时间单位为天，0表示尽快删除，-1表示取消过期时间，永久保存,要设置-1的时候，需要将整个包含在引号内
-```
-wcscmd setdeadline wcs://BUCKET/OBJECT 3
-wcscmd setdeadline wcs://BUCKET/OBJECT '"-1"'
+// URL：必填，由域名+文件名称组成，url需要用''引号包含起来
+// fileName： 非必填，文件下载到本地的名称，默认为原文件名
+wcscmd get ['URL'] [filename]
 ```
 
-#### wcscmd[删除文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/delete)
-```wcscmd del wcs://BUCKET/OBJECT```
-
-#### wcscmd[按前缀删除文件](https://wcs.chinanetcenter.com/document/API/Fmgr/deletePrefix)
+### wcscmd-获取文件信息
+查询文件的基本信息。
 ```
-wcscmd deletePrefix wcs://BUCKET test-prefix
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// OBJCET：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+wcscmd stat wcs://BUCKET/OBJECT
 ```
 
-#### wcscmd[移动文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/move)
-```wcscmd mv wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT```
+### wcscmd-设置文件保存期限
+设置文件保存期限，到期后自动删除。保存时间单位为天，0表示尽快删除，-1表示取消过期时间，永久保存,要设置-1的时候，需要将整个包含在引号内。
+```
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// OBJCET：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+// day：必填，到期天数，单位天，如30
+wcscmd setdeadline wcs://BUCKET/OBJECT <day>
+```
 
-#### wcscmd[复制文件](https://wcs.chinanetcenter.com/document/API/ResourceManage/copy)
-```wcscmd cp wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT```
+### wcscmd-删除文件
+删除对象存储上的文件，删除后不可恢复。
+```
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// OBJCET：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+wcscmd del wcs://BUCKET/OBJECT
+```
+
+### wcscmd-按前缀删除文件
+删除有相同前缀的所有文件，如指定prefix=html/，则会删除html目录下的所有文件。
+```
+// BUCKET：必填，使用实际空间名称填充，如mybucket
+// OBJCET：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+// prefix：必填，前缀名称
+wcscmd deletePrefix wcs://BUCKET <prefix>
+```
+
+### wcscmd-移动文件
+在对象存储同空间或者不同空间内移动文件。
+```
+// SRCBUCKET：必填，源空间名，如mybucket1
+// SRCOBJECT：必填，源文件名，如index.html1
+// DSTBUCKET：必填，目标空间名，如mybucket2
+// DSTOBJECT：必填，目标文件名，如index.html2
+wcscmd mv wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
+```
+
+### wcscmd-复制文件
+```
+// SRCBUCKET：必填，源空间名，如mybucket1
+// SRCOBJECT：必填，源文件名，如index.html1
+// DSTBUCKET：必填，目标空间名，如mybucket2
+// DSTOBJECT：必填，目标文件名，如index.html2
+wcscmd cp wcs://SRCBUCKET/SRCOBJECT wcs://DSTBUCKET/DSTOBJECT
+```
 
 
-## 计算文件etag值
+### 计算文件etag值
 wcs-python-sdk提供了计算文件etag值的工具，用户通过命令行的形式体验这个功能
 ```
 /usr/bin/wcs_etag_cal -h
@@ -252,7 +291,6 @@ optional arguments:
 [filepath1, filepath2]
 FrA377uGHSxcTM62-rjsjvoKqRVS FiUsqBkZ6e8KaAA9Uu6q3qLPgmDW
 ```
-
 常见问题
 
 1.在相应模块已经安装的情况下，使用工具时出现下面错误：
@@ -260,8 +298,8 @@ FrA377uGHSxcTM62-rjsjvoKqRVS FiUsqBkZ6e8KaAA9Uu6q3qLPgmDW
 2.解决方案：
 `pip install --upgrade setuptools`
 
-## Python SDK使用
-配置信息初始化
+## SDK使用
+### 配置信息初始化
 ```
 import os
 from os.path import expanduser
@@ -270,137 +308,158 @@ from wcs.services.client import Client
 
 config_file = os.path.join(expanduser("~"), ".wcscfg")
 cfg = Config(config_file) #加载配置文件
-cli = Client(cfg) 初始化Client
+cli = Client(cfg) 初始化Client  #注：如果要使用多线程同时上传不同文件，请每个线程独立创建client使用，否则不同文件的分片上传信息会重叠
 ```
 
-#### [普通上传](https://wcs.chinanetcenter.com/document/API/FileUpload/Upload)
-上传策略通过编辑.wcscfg文件中响应的配置项进行定义
+SDK通用参数说明
+|参数名|参数说明|
+|--|--|
+|bucket|空间名称，需要在对象存储控制台提前创建|
+|key|文件名称，文件存储在对象存储上的完整名称，如index.html、html/index.html等|
+|filepath|文件的本地路径|
+
+### 普通上传
+普通上传，单次请求上传完整的文件内容。
 ```
-key = ''
-bucket = ''
-filepath = ''
+# bucket：必填，使用实际空间名称填充，如mybucket
+# key：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+# localpath：必填，需要上传文件的本地路径，如/tmp/index.html
+
 cli.simple_upload(filepath, bucket, key)
 ```
 
-#### [分片上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-上传策略通过编辑.wcscfg文件中响应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
+### 分片上传
+分片上传，适用于4M以上的大文件。
 ```
-key = ''
-bucket = ''
-filepath = ''
-upload_id = ''
-cli.multipart_upload(filepath, bucket, key，upload_id)
+# bucket：必填，使用实际空间名称填充，如mybucket
+# key：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+# localpath：必填，需要上传文件的本地路径，如/tmp/index.html
+# upload_id：非必填，如希望做断点续传，可指定容易识别的唯一字符串标识此次分片上传任务
+
+cli.multipart_upload(filepath, bucket, key，<upload_id>)  
 ```
 另外，当前上传记录的格式是在tmp\_record\_folder目录下，生成已当前上传任务的upload id命名的目录，然后在目录tmp\_record\_folder/upload id下生成多个文件，每个文件以块offset命名，并记录了这个块的上传结果
 
-#### [高级上传](https://wcs.chinanetcenter.com/document/API/FileUpload/SliceUpload)
-1 该接口用于自动选择是原子上传还是分片上传，默认的multi_size 为20M （入参单位为M），小于等于20M 使用原子上传，大于20M使用分片上传
-2 上传策略通过编辑.wcscfg文件中响应的配置项进行定义，断点续传需要提供upload id，在上传时传入，这个upload id优先级高于在.wcscfg中配置的upload id
+### 高级上传
+该接口用于自动选择是普通上传还是分片上传，默认的multi_size 为20M （入参单位为M），小于等于20M 使用普通上传，大于20M使用分片上传
 ```
-key = ''
-bucket = ''
-filepath = ''
-upload_id = ''
-cli.smart_upload(filepath, bucket, key，upload_id,multi_size)
+# bucket：必填，使用实际空间名称填充，如mybucket
+# key：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+# localpath：必填，需要上传文件的本地路径，如/tmp/index.html
+# upload_id：非必填，如希望做断点续传，可指定容易识别的唯一字符串标识此次分片上传任务
+
+cli.smart_upload(filepath, bucket, key, <upload_id>, multi_size=20)
 ```
 另外，当前上传记录的格式是在tmp\_record\_folder目录下，生成已当前上传任务的upload id命名的目录，然后在目录tmp\_record\_folder/upload id下生成多个文件，每个文件以块offset命名，并记录了这个块的上传结果
 
-#### 流地址上传
-上传策略通过编辑.wcscfg文件中相应的配置项进行定义，上传时需要提供流地址
+### 流地址上传
+上传文件流
 ```
-key = ''
-bucket = ''
-stream = ''
+# bucket：必填，使用实际空间名称填充，如mybucket
+# key：必填，使用文件存储在对象存储上的实际名称填充，如index.html
+# stream：必填，文件流信息
 cli.stream_upload(stream, bucket, key)
 ```
 
-#### [列举空间列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/listbucket)
+### 列举空间列表
 ```
 cli.list_buckets()
+```
+
+### 列举空间对象列表
+接口相关的4个可选参数（limit，mode，prefix，marker）可以在调用时传入，也可以通过.wcscfg文件中相应的配置项进行定义
+```
+# bucket 必填，空间名称
+# limit 非必填，指定单次列举返回的文件数，最大支持1000条
+# prefix 非必填，列举指定前缀的文件列表
+cli.bucket_list(bucket,limit=1000,prefix="html/")
 说明：prefix 参数传入不需要base64安全编码
 ```
 
-#### [列举空间对象列表](https://wcs.chinanetcenter.com/document/API/ResourceManage/list)
-接口相关的4个可选参数（limit，mode，prefix，marker）可以在调用时传入，也可以通过.wcscfg文件中相应的配置项进行定义
+### 获取空间存储量
+统计指定时间范围内空间的存储量
 ```
-cli.bucket_list(bucket,limit=10)
-```
-
-#### [获取空间存储量](https://wcs.chinanetcenter.com/document/API/ResourceManage/bucketstat)
-```
-startdate = '2017-11-10'
-enddate = '2017-11-12'
-bucket = ''
+# startdate 必填，统计开始时间，如'2021-11-10'
+# enddate 必填，统计结束时间，如'2021-11-12'
+# bucket 必填，空间名称
 cli.bucket_stat(bucket, startdate, enddate)
 ```
 
-#### [获取文件信息](https://wcs.chinanetcenter.com/document/API/ResourceManage/stat)
+### 获取文件信息
+查看文件的基础信息
 ```
-key = ''
-bucket = ''
+# bucket 必填，空间名称
+# key 必填，文件名称
 cli.stat(bucket, key)
 ```
 
-#### [文件删除](https://wcs.chinanetcenter.com/document/API/ResourceManage/delete)（同步）
+### 文件删除
+删除文件，删除后不可恢复
 ```
-key = ''
-bucket = ''
+# bucket 必填，空间名称
+# key 必填，文件名称
 cli.delete(bucket, key)
 ```
 
-#### [文件移动](https://wcs.chinanetcenter.com/document/API/ResourceManage/move)（同步）
+### 文件移动
+在相同空间内或者不同空间之间移动文件
 ```
-srcbucket = ''
-srckey = ''
-dstbucket = ''
-dstkey = ''
+# srcbucket 必填，源空间名称
+# srckey 必填，源文件名称
+# dstbucket 必填，目标空间名称
+# dstkey 必填，目标文件名称
 cli.move(srcbucket, srckey, dstbucket, dstkey)
 ```
 
-#### [文件复制](https://wcs.chinanetcenter.com/document/API/ResourceManage/copy)（同步）
+### 文件复制
+在相同空间内或者不同空间之间复制文件
 ```
-srcbucket = ''
-srckey = ''
-dstbucket = ''
-dstkey = ''
+# srcbucket 必填，源空间名称
+# srckey 必填，源文件名称
+# dstbucket 必填，目标空间名称
+# dstkey 必填，目标文件名称
 cli.copy(srcbucket, srckey, dstbucket, dstkey)
 ```
 
-#### [设置文件过期时间](https://wcs.chinanetcenter.com/document/API/ResourceManage/setdeadline)
+### 设置文件过期时间
+设置文件保存期限，到期后自动删除。保存时间单位为天，0表示尽快删除，-1表示取消过期时间，永久保存,要设置-1的时候，需要将整个包含在引号内。
 ```
-bucket = ''
-key = ''
-deadline = 3
+# bucket 必填，使用实际空间名称填充，如mybucket
+# key 必填，使用文件存储在对象存储上的实际名称填充，如index.html
+# deadline 必填，到期天数，单位天，如30，则文件会在当天日期的30天后被过期删除
 cli.setdeadline(bucket, key, deadline)
 ```
 
-#### [文件移动](https://wcs.chinanetcenter.com/document/API/Fmgr/move)（异步）
+### 文件移动
+使用异步任务的方式，移动文件，支持一个请求添加多个移动任务
 ```
-srcbucket = 'srcbucket'
-srckey = '1.doc'
-dstbucket = 'dstbucket'
-dstkey = '2.doc'
+srcbucket = 'srcbucket'  //源空间名称
+srckey = '1.doc'        //源文件名称
+dstbucket = 'dstbucket'   //目标空间名称
+dstkey = '2.doc'          //目标文件名称
 resource = urlsafe_base64_encode('%s:%s' % (srcbucket,srckey))
 fops = 'resource/%s/bucket/%s/key/%s' % (resource,urlsafe_base64_encode(dstbucket), urlsafe_base64_encode(dstkey))
 cli.fmgr_move(fops)
 ```
 
-#### [文件复制](https://wcs.chinanetcenter.com/document/API/Fmgr/copy)（异步）
+### 文件复制
+使用异步任务的方式，复制文件，支持一个请求添加多个复制任务
 ```
-srcbucket = 'srcbucket'
-srckey = '1.doc'
-dstbucket = 'dstbucket'
-dstkey = '2.doc'
+srcbucket = 'srcbucket'  //源空间名称
+srckey = '1.doc'        //源文件名称
+dstbucket = 'dstbucket'   //目标空间名称
+dstkey = '2.doc'          //目标文件名称
 resource = urlsafe_base64_encode('%s:%s' % (srcbucket,srckey))
 fops = 'resource/%s/bucket/%s/key/%s' % (resource,urlsafe_base64_encode(dstbucket), urlsafe_base64_encode(dstkey))
 cli.fmgr_copy(fops)
 ```
 
-#### [文件抓取](https://wcs.chinanetcenter.com/document/API/Fmgr/fetch)
+### 文件抓取
+使用异步任务的方式，将指定的资源（URL）的文件抓取到对象存储空间内。
 ```
-url = 'http://a20170704-weihb.w.wcsapi.biz.matocloud.com/1.doc'
-key = '1.doc'
-bucket = 'test'
+url = 'http://a20170704-weihb.w.wcsapi.biz.matocloud.com/1.doc'  //需要抓取的文件地址（需要支持公网访问）
+key = '1.doc'       // 存储在对象存储空间上的文件名称
+bucket = 'test'     // 空间名称
 fetchurl = urlsafe_base64_encode(url)
 enbucket = urlsafe_base64_encode(bucket)
 enkey = urlsafe_base64_encode(key)
@@ -408,7 +467,8 @@ fops = 'fetchURL/%s/bucket/%s/key/%s' % (fetchurl, enbucket, enkey)
 cli.fmgr_fetch(fops)
 ```
 
-#### 文件删除（异步）
+### 文件删除（异步）
+使用异步任务的方式，删除文件，支持一个请求添加多个删除任务
 ```
 key = '1.doc'
 bucket = 'test'
@@ -418,62 +478,49 @@ fops = 'bucket/%s/key/%s' % (enbucket, enkey)
 cli.fmgr_delete(fops)
 ```
 
-#### [按前缀删除文件](https://wcs.chinanetcenter.com/document/API/Fmgr/deletePrefix)
+### 按前缀删除文件
+删除有相同前缀的所有文件，如指定prefix=html/，则会删除html目录下的所有文件。
 ```
-prefix = 'test'
-bucket = 'bucket'
+prefix = 'test/'   //需要删除的文件共同前缀，如prefix=test/，则会删除根路径下test目录下的所有文件
+bucket = 'bucket'   // 空间名称
 enbucket = urlsafe_base64_encode(bucket)
 enprefix = urlsafe_base64_encode(prefix)
 fops = 'bucket/%s/prefix/%s' % (enbucket, enprefix)
 cli.prefix_delete(fops)
 ```
 
-#### [删除M3U8文件](https://wcs.chinanetcenter.com/document/API/Fmgr/deletem3u8)
+### 删除M3U8文件
+删除m3u8文件以及关联的ts文件
 ```
-bucket = ''
-key = ''
+bucket = ''     // 空间名称
+key = ''        // m3u8文件名称
 enbucket = urlsafe_base64_encode(bucket)
 enkey = urlsafe_base64_encode(key)
 fops = 'bucket/%s/key/%s' % (enbucket, enkey)
 cli.m3u8_delete(fops)
 ```
 
-#### 高级资源管理任务查询
+### 高级资源管理任务查询
+查询异步删除、复制等任务的状态
 ```
-persistentId = ''
+persistentId = ''  // 下发异步任务时响应的任务ID
 cli.fmgr_status(persistentId)
 ```
 
-#### [音视频处理](https://wcs.chinanetcenter.com/document/API/Video-op)
+### 音视频处理
 ```
-bucket = 'test'
-key = 'test.mp4'
-fops = 'vframe/jpg/offset/1'
+bucket = 'test'     // 空间名称
+key = 'test.mp4'    // 文件名称
+fops = 'vframe/jpg/offset/1'   // 转码指令
 cli.ops_execute(fops,bucket,key)
 ```
 
-#### 直播录制文件查询
-请求参数说明如下：
-
-|参数       | 必填	| 描述 |
-|--------   | -----:   | :----: |
-|channelname        | 是      |   直播流名    |
-|startTime        | 是      |   指定直播开始时间，格式为YYYYMMDDmmhhss    |
-|endTime	        | 是      |   指定直播结束时间，格式为YYYYMMDDmmhhss    |
-|bucket             | 是      |指定空间 |
-|start              | 否      |指定起始位置，查询结果从该位置开始返回，如0、1、100 默认值为1，即从查询范围内的第一条记录开始返回|
-|limit              |否       |指定查询个数。不指定则查询所有记录|
-
-```
-示例：cli.wslive_list(channelname,startTime,startTime, bucket,start,limit)
-```
-
-### 计算文件crc64
-#### 方式1：
+## 计算文件crc64的三种方式
+### 方式1：
 wcscmd[计算文件的crc64值]
 ```wcscmd crc64 ./test-1k```
 
-#### 方式2：
+### 方式2：
 计算整个文件的crc64值，入参为[file,is_path=True],传入为文件流时候，需配置参数is_path=False
 ```
 from wcs.commons.util import file_crc64
@@ -484,12 +531,12 @@ from wcs.commons.util import file_crc64
 fileStream = 'xxxx' #文件流
 crc64Value = file_crc64(fileStream,is_path=False)
 
-####计算文件文件流的crc64值，入参为文件流，文件流过大时候，不建议用该方式。建议使用file_crc64，入参为isPath=False的方式
+计算文件文件流的crc64值，入参为文件流，文件流过大时候，不建议用该方式。建议使用file_crc64，入参为isPath=False的方式
 from wcs.commons.util import crc64
 crc64Value = crc64(stream)
 ```
 
-#### 方式3：
+### 方式3：
 wcs-python-sdk提供了计算文件crc64值的工具，用户通过命令行的形式体验这个功能
 ```
 usage: WCS Python SDK [-h] {crc64} ...
