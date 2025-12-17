@@ -13,4 +13,4 @@ from .services.simpleupload import SimpleUpload
 from .services.multipartupload import MultipartUpload
 from .services.uploadprogressrecorder import UploadProgressRecorder
 from .services.fmgr import Fmgr
-from .services.wslive import WsLive
+from .services.wslive import WsLive
