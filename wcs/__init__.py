@@ -1,4 +1,4 @@
-__version__ = '5.0.35'
+__version__ = '5.0.36'
 
 from .commons.auth import Auth
 from .commons.compat import urlparse 
@@ -13,4 +13,4 @@ from .services.simpleupload import SimpleUpload
 from .services.multipartupload import MultipartUpload
 from .services.uploadprogressrecorder import UploadProgressRecorder
 from .services.fmgr import Fmgr
-from .services.wslive import WsLive
+from .services.wslive import WsLive
